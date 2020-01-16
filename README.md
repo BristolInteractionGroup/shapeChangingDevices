@@ -8,7 +8,7 @@ It provides a pressure profile using an SMC presssure proportional valve. The va
 * type `git clone https://github.com/BristolInteractionGroup/shapeChangingDevices` this downloads the code
 * change into the folder you downloaded using `cd shapeChangingDevices` - press enter
 * to install the dependances use `sudo ./install.sh` press enter
-* if that doesn't work and you get an error, make it executable using chmod +x ./install.sh and repeat last step
+* if that doesn't work and you get an error, make it executable using `chmod +x ./install.sh` and repeat last step
 * To run the programme `sudo python3 shapeChange.py` press enter
 
 
