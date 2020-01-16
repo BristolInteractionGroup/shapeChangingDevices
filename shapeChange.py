@@ -7,6 +7,10 @@ import addapy # python wrapper for waveshare drivers
 import time  # library for timing
 from adc_consts import * # import the default constants for the adc
 
+# limiting values to prevent high pressure being sent to device
+pMin = 0.0
+pMax = 0.5
+
 # Issues
 # addapy library not in python path
 # addapy slow
@@ -46,6 +50,8 @@ def runValve(entries):
     minLc = np.where(pres == np.amin(pres))  #  find the low pressure
     pHigh = pres[maxLc[0][0]] # store the high pressure
     pLow = pres[minLc[0][0]]  # store the low pressure
+    pHigh = np.clip(pHigh,pMin,pMax)  # clip the pressure to a safe range
+    pLow = np.clip(pLow,pMin,pMax)  # clip the pressure to a safe range
     pDiff = pHigh-pLow  # calculate the difference
     upSamples = np.arange(pLow, pHigh, pDiff / (t1/Ts))  # create a list of sample points for ramp up phase
     downSamples = np.flip(np.arange(pLow, pHigh, pDiff / (t3/Ts)))  # create a list of ramp down samples - done by flipping the array
