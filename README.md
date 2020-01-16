@@ -3,8 +3,6 @@ code for multi-sensory perceptual research
 
 It provides a pressure profile using an SMC presssure proportional valve. The valve is addressed using an analogue voltage in range 0-10 V. 
 
-![](https://github.com/BristolInteractionGroup/shapeChangingDevices/images/pressureProfile.tiff "Pressure Profile")
-
 ## To install:
 * open a terminal
 * type `git clone https://github.com/BristolInteractionGroup/shapeChangingDevices` this downloads the code
