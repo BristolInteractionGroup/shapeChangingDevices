@@ -1,10 +1,9 @@
 # shapeChangingDevices
 code for multi-sensory perceptual research 
 
-It provides a pressure profile using an SMC presssure proportional valve. The valve is address with a voltage 0-10 V. 
+It provides a pressure profile using an SMC presssure proportional valve. The valve is addressed using an analogue voltage in range 0-10 V. 
 
-Inline-style: 
-![alt text](https://github.com/BristolInteractionGroup/shapeChangingDevices/images/pressureProfile.tiff
+![](https://github.com/BristolInteractionGroup/shapeChangingDevices/images/pressureProfile.tiff "Pressure Profile")
 
 ## To install:
 * open a terminal
@@ -13,3 +12,5 @@ Inline-style:
 * to install the dependances use `sudo ./install.sh` press enter
 * if that doesn't work and you get an error, make it executable using chmod +x ./install.sh and repeat last step
 * To run the programme `sudo python3 shapeChange.py` press enter
+
+
