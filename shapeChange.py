@@ -7,6 +7,10 @@ import RPi.GPIO as GPIO  # raspberry pi IO library
 import addapy  # python wrapper for waveshare drivers 
 from adc_consts import *  # import the default constants for the adc
 
+# limiting values to prevent high pressure being sent to device
+pMin = 0.0
+pMax = 0.5
+
 # Issues
 # addapy library not in python path
 # addapy slow
