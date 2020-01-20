@@ -7,9 +7,6 @@ import RPi.GPIO as GPIO  # raspberry pi IO library
 import addapy  # python wrapper for waveshare drivers 
 from adc_consts import *  # import the default constants for the adc
 
-# limiting values to prevent high pressure being sent to device
-pMin = 0.0
-pMax = 0.5
 
 # Issues
 # addapy library not in python path
@@ -26,11 +23,12 @@ rate = ADS1256_DRATE['10']
 mode = ADS1256_SMODE['SINGLE_ENDED']
 addapy.start_adda(gain, rate, mode)  # send the settings to the adc chip
 
+# limiting values to prevent high pressure being sent to device
+pMin = 0.0
+pMax = 0.5
 fields = ('Ramp up, t1 (sec)', 'Hold up, t2 (sec)', 'Ramp down, t3 (sec)', 
           'Hold down, t4 (sec)', 'Low pressure, p1 (volt)',
           'High pressure, p2 (volt)', 'Number of Iterations')
-
-
 defaults = [5, 3, 0.5, 3, 0, 0.32, 5]  # default value for fields
 
 global threadRunning  # define a global variable used to stop multiple output threads from threadRunning
@@ -48,6 +46,15 @@ def runValve(entries):
     t4 = abs(float(entries['Hold down, t4 (sec)'].get()))
     p1 = abs(float(entries['Low pressure, p1 (volt)'].get()))
     p2 = abs(float(entries['High pressure, p2 (volt)'].get()))
+
+    p1 = np.clip(p1,pMin,pMax)  # clip the pressure to a safe range    
+    p2 = np.clip(p2,pMin,pMax)  # clip the pressure to a safe range
+
+    entries['Low pressure, p1 (volt)'].delete(0,'end')
+    entries['High pressure, p2 (volt)'].delete(0,'end')
+    entries['Low pressure, p1 (volt)'].insert(0,str(p1))
+    entries['High pressure, p2 (volt)'].insert(0,str(p2))
+    
     noOfIterations = abs(int(entries['Number of Iterations'].get()))
     # create the pressure time series
     pressureSamples = generateSamples(t1, t2, t3, t4, p1, p2, Ts)  
@@ -60,18 +67,19 @@ def runValve(entries):
             for iteration in range(0, noOfIterations):
                 # loop through each pressure samples
                 for pressure in pressureSamples:
-                    # if stop button is pressed set exit loop
+                    # if stop button is pressed, break the loop
                     if stop_event.is_set():
                         break
                     addapy.write_volts(0, pressure)  # send the voltage
                     print(f'output: {pressure:.3f}')
                     time.sleep(Ts)  # wait until next sample
-                if stop_event.is_set():  # if stop button exit loop
-                    stop_event.clear()
+                if stop_event.is_set():  # if stop button break loop and reset event
+
                     break
                 print('end of iteration')
             print('output ended')
             addapy.write_volts(0, 0)
+            stop_event.clear()
             threadRunning = False  # last line so thread is closing
         t = threading.Thread(target=callback)
         t.start()
@@ -95,7 +103,7 @@ def generateSamples(t1, t2, t3, t4, p1, p2, Ts):
 
 def stopValve():
     stop_event.set()
-    # addapy.write_volts(0, 0)
+    addapy.write_volts(0, 0)
     print('output: 0.000')
     print('output stopped')
 
