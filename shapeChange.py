@@ -74,11 +74,15 @@ def runValve(entries):
                     print(f'output: {pressure:.3f}')
                     time.sleep(Ts)  # wait until next sample
                 if stop_event.is_set():  # if stop button break loop and reset event
-
                     break
                 print('end of iteration')
             print('output ended')
-            addapy.write_volts(0, 0)
+            
+            if invertPolarity.get() is True:
+                addapy.write_volts(0, p2)
+            else:
+                addapy.write_volts(0, 0)
+                    
             stop_event.clear()
             threadRunning = False  # last line so thread is closing
         t = threading.Thread(target=callback)
@@ -94,7 +98,7 @@ def generateSamples(t1, t2, t3, t4, p1, p2, Ts):
     holdDown = p1 * np.ones(int(t4/Ts))  # samples for hold down
     if invertPolarity.get() is True:
         # combines the arrays we made
-        pressureSamples = np.concatenate((rampDown, holdDown, rampUp, holdUp))
+        pressureSamples = np.concatenate((holdUp, rampDown, holdDown, rampUp))
     else:
         # combines the arrays we made in inverted order
         pressureSamples = np.concatenate((rampUp, holdUp, rampDown, holdDown))
@@ -108,10 +112,22 @@ def stopValve():
     print('output stopped')
 
 
-def changePolarity():
+def changePolarity(entries):
     #  changes holding voltage between p1 and p2
+    p1 = abs(float(entries['Low pressure, p1 (volt)'].get()))
+    p2 = abs(float(entries['High pressure, p2 (volt)'].get()))
+
+    p1 = np.clip(p1,pMin,pMax)  # clip the pressure to a safe range    
+    p2 = np.clip(p2,pMin,pMax)  # clip the pressure to a safe range
+        
+    entries['Low pressure, p1 (volt)'].delete(0,'end')
+    entries['High pressure, p2 (volt)'].delete(0,'end')
+    entries['Low pressure, p1 (volt)'].insert(0,str(p1))
+    entries['High pressure, p2 (volt)'].insert(0,str(p2))
+    
     if invertPolarity.get() is True:
         print('invert enabled')
+        
         addapy.write_volts(0, p2)
     else:
         addapy.write_volts(0, 0)
@@ -127,8 +143,6 @@ def quitButton():
 
 def makeform(root, fields, defaults):  # this adds the text fields to the UI
     entries = {}
-
-
     for field in range(0, len(defaults)):
         row = tk.Frame(root)
         lab = tk.Label(row, width=22, text=fields[field]+": ", anchor='w')
@@ -160,7 +174,7 @@ if __name__ == '__main__':
     chkInvert = tk.Checkbutton(root,
                    text='invert polarity (hold at p2 and start with ramp down)',
                    var=invertPolarity,
-                   command=changePolarity)
+                   command=(lambda e=ents: changePolarity(e)))
     chkInvert.pack(side='top')
     b1 = tk.Button(root,
                    text='Run',
